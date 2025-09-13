@@ -471,6 +471,13 @@
       const [githubQuery, setGithubQuery] = useState('');
       const [githubEvidence, setGithubEvidence] = useState(null);
       const [githubLoading, setGithubLoading] = useState(false);
+      
+      // API Evidence state
+      const [apiProvider, setApiProvider] = useState('github');
+      const [apiParams, setApiParams] = useState({});
+      const [apiEvidence, setApiEvidence] = useState(null);
+      const [apiLoading, setApiLoading] = useState(false);
+      const [supportedProviders, setSupportedProviders] = useState([]);
 
       const checkBackend = async () => {
         try {
@@ -722,6 +729,56 @@
           console.error('Download error:', error);
         }
       };
+      
+      // API Evidence functions
+      const fetchSupportedProviders = async () => {
+        try {
+          const response = await fetch('http://localhost:8080/api/evidence/providers');
+          if (response.ok) {
+            const data = await response.json();
+            setSupportedProviders(data.providers);
+          }
+        } catch (error) {
+          console.error('Error fetching providers:', error);
+        }
+      };
+      
+      const handleAPIEvidence = async () => {
+        if (backendStatus !== 'connected') {
+          alert('Backend not available. Please wait for Spring Boot to start.');
+          return;
+        }
+        
+        setApiLoading(true);
+        try {
+          const response = await fetch('http://localhost:8080/api/evidence/retrieve', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              provider: apiProvider,
+              params: apiParams
+            }),
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            setApiEvidence(result);
+          } else {
+            throw new Error('Failed to retrieve API evidence');
+          }
+        } catch (error) {
+          console.error('API Evidence error:', error);
+          setApiEvidence({ error: error.message });
+        } finally {
+          setApiLoading(false);
+        }
+      };
+      
+      const updateApiParam = (key, value) => {
+        setApiParams(prev => ({ ...prev, [key]: value }));
+      };
 
       useEffect(() => {
         // Check backend every 3 seconds
@@ -740,6 +797,9 @@
       useEffect(() => {
         if (backendStatus === 'connected' && activeTab === 'chat' && suggestions.length === 0) {
           fetchSuggestions();
+        }
+        if (backendStatus === 'connected' && activeTab === 'api' && supportedProviders.length === 0) {
+          fetchSupportedProviders();
         }
       }, [backendStatus, activeTab]);
 
@@ -799,6 +859,12 @@
               onClick={() => setActiveTab('github')}
             >
               🔗 GitHub Evidence
+            </button>
+            <button 
+              className={`tab ${activeTab === 'api' ? 'active' : ''}`}
+              onClick={() => setActiveTab('api')}
+            >
+              🌐 API Evidence
             </button>
           </nav>
 
@@ -1135,6 +1201,170 @@
                       <div className="status error">
                         {githubEvidence.error}
                       </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {activeTab === 'api' && (
+              <div className="search-section">
+                <h2>🌐 Unified API Evidence Retrieval</h2>
+                <p style={{marginBottom: '1.5rem', color: '#666'}}>
+                  Retrieve evidence from multiple providers using a unified API interface
+                </p>
+                
+                <div style={{marginBottom: '1.5rem'}}>
+                  <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: 'bold'}}>Provider:</label>
+                  <select 
+                    value={apiProvider} 
+                    onChange={(e) => setApiProvider(e.target.value)}
+                    style={{padding: '0.5rem', borderRadius: '5px', border: '1px solid #ddd', width: '200px'}}
+                  >
+                    <option value="github">GitHub</option>
+                    <option value="jira">Jira (Coming Soon)</option>
+                  </select>
+                </div>
+                
+                {apiProvider === 'github' && (
+                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', marginBottom: '1.5rem'}}>
+                    <div>
+                      <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: 'bold'}}>Owner:</label>
+                      <input
+                        type="text"
+                        value={apiParams.owner || ''}
+                        onChange={(e) => updateApiParam('owner', e.target.value)}
+                        placeholder="e.g., microsoft"
+                        className="search-input"
+                      />
+                    </div>
+                    <div>
+                      <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: 'bold'}}>Repository:</label>
+                      <input
+                        type="text"
+                        value={apiParams.repo || ''}
+                        onChange={(e) => updateApiParam('repo', e.target.value)}
+                        placeholder="e.g., vscode"
+                        className="search-input"
+                      />
+                    </div>
+                    <div>
+                      <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: 'bold'}}>Type:</label>
+                      <select 
+                        value={apiParams.type || 'commits'} 
+                        onChange={(e) => updateApiParam('type', e.target.value)}
+                        style={{padding: '0.5rem', borderRadius: '5px', border: '1px solid #ddd', width: '100%'}}
+                      >
+                        <option value="commits">Commits</option>
+                        <option value="prs">Pull Requests</option>
+                        <option value="issues">Issues</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: 'bold'}}>Query (Optional):</label>
+                      <input
+                        type="text"
+                        value={apiParams.query || ''}
+                        onChange={(e) => updateApiParam('query', e.target.value)}
+                        placeholder="Search term"
+                        className="search-input"
+                      />
+                    </div>
+                    <div>
+                      <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: 'bold'}}>Author (Optional):</label>
+                      <input
+                        type="text"
+                        value={apiParams.author || ''}
+                        onChange={(e) => updateApiParam('author', e.target.value)}
+                        placeholder="GitHub username"
+                        className="search-input"
+                      />
+                    </div>
+                    <div>
+                      <label style={{display: 'block', marginBottom: '0.5rem', fontWeight: 'bold'}}>Since (Optional):</label>
+                      <input
+                        type="date"
+                        value={apiParams.since || ''}
+                        onChange={(e) => updateApiParam('since', e.target.value)}
+                        className="search-input"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                <div style={{marginBottom: '1.5rem'}}>
+                  <button
+                    onClick={handleAPIEvidence}
+                    disabled={apiLoading || backendStatus !== 'connected' || !apiParams.owner || !apiParams.repo}
+                    className="search-btn"
+                  >
+                    {apiLoading ? 'Retrieving...' : 'Retrieve Evidence'}
+                  </button>
+                </div>
+                
+                {supportedProviders.length > 0 && (
+                  <div style={{marginBottom: '1.5rem', padding: '1rem', background: '#f8f9fa', borderRadius: '10px'}}>
+                    <h4>📋 Supported Providers:</h4>
+                    {supportedProviders.map((provider, index) => (
+                      <div key={index} style={{marginBottom: '0.5rem'}}>
+                        <strong>{provider.name}</strong> ({provider.status}) - 
+                        Types: {provider.supported_types.join(', ')}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {apiEvidence && (
+                  <div className="results-section">
+                    <h3>📊 API Evidence Retrieved</h3>
+                    {apiEvidence.error ? (
+                      <div className="status error">
+                        {apiEvidence.error}
+                      </div>
+                    ) : (
+                      <>
+                        <p><strong>Source:</strong> {apiEvidence.source}</p>
+                        <p><strong>Repository:</strong> {apiEvidence.repository}</p>
+                        <p><strong>Query Parameters:</strong> {apiEvidence.query_params}</p>
+                        <p><strong>Summary:</strong> {apiEvidence.summary}</p>
+                        
+                        {apiEvidence.human_readable && (
+                          <div style={{padding: '1rem', background: '#e8f4fd', borderRadius: '10px', marginBottom: '1rem'}}>
+                            <h4>🤖 AI Analysis:</h4>
+                            <p>{apiEvidence.human_readable}</p>
+                          </div>
+                        )}
+                        
+                        {apiEvidence.evidence && apiEvidence.evidence.length > 0 && (
+                          <div className="documents-grid">
+                            {apiEvidence.evidence.slice(0, 6).map((item, index) => (
+                              <div key={index} className="document-card">
+                                {item.sha && (
+                                  <>
+                                    <h5>📝 {item.sha}</h5>
+                                    <p><strong>Message:</strong> {item.message}</p>
+                                    <p><strong>Author:</strong> {item.author}</p>
+                                    <p><strong>Date:</strong> {item.date}</p>
+                                    {item.files_changed && <p><strong>Files:</strong> {item.files_changed}</p>}
+                                  </>
+                                )}
+                                {item.number && (
+                                  <>
+                                    <h5>#{item.number}</h5>
+                                    <p><strong>Title:</strong> {item.title}</p>
+                                    <p><strong>State:</strong> {item.state}</p>
+                                    <p><strong>Author:</strong> {item.author}</p>
+                                    <p><strong>Created:</strong> {item.created_at}</p>
+                                    {item.merged_at && <p><strong>Merged:</strong> {item.merged_at}</p>}
+                                    {item.labels && <p><strong>Labels:</strong> {item.labels}</p>}
+                                  </>
+                                )}
+                                <a href={item.url} target="_blank" rel="noopener noreferrer">View Source</a>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
