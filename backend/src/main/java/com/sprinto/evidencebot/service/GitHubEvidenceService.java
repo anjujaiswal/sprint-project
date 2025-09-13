@@ -295,4 +295,42 @@ public class GitHubEvidenceService {
                            "This shows project maintenance and issue tracking activity.",
             owner, repo, evidence.size(), open, closed);
     }
+
+    public Map<String, Object> getRepositories(String owner) {
+        try {
+            String uri = baseUrl + "/users/" + owner + "/repos?per_page=30&sort=updated";
+            
+            JsonNode repos = webClient.get()
+                    .uri(uri)
+                    .header("Authorization", "Bearer " + githubToken)
+                    .header("Accept", "application/vnd.github.v3+json")
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+
+            List<Map<String, Object>> repositories = new ArrayList<>();
+            if (repos != null && repos.isArray()) {
+                for (JsonNode repo : repos) {
+                    Map<String, Object> repoData = new HashMap<>();
+                    repoData.put("name", repo.get("name").asText());
+                    repoData.put("full_name", repo.get("full_name").asText());
+                    repoData.put("description", repo.has("description") && !repo.get("description").isNull() ? 
+                            repo.get("description").asText() : "No description");
+                    repoData.put("private", repo.get("private").asBoolean());
+                    repoData.put("updated_at", formatDate(repo.get("updated_at").asText()));
+                    repoData.put("url", repo.get("html_url").asText());
+                    repositories.add(repoData);
+                }
+            }
+
+            return Map.of(
+                "owner", owner,
+                "repositories", repositories,
+                "count", repositories.size(),
+                "summary", "Found " + repositories.size() + " repositories for " + owner
+            );
+        } catch (Exception e) {
+            return Map.of("error", "Failed to retrieve repositories: " + e.getMessage());
+        }
+    }
 }
