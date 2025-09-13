@@ -1,0 +1,99 @@
+<!-- GitHub Evidence Tab Content -->
+<div className="search-section">
+  <h2>🔗 GitHub Evidence Retrieval</h2>
+  <p style={{marginBottom: '1.5rem', color: '#666'}}>
+    Pull compliance evidence from GitHub repositories - commits, pull requests, and change logs
+  </p>
+  
+  <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem'}}>
+    <input
+      type="text"
+      value={githubOwner}
+      onChange={(e) => setGithubOwner(e.target.value)}
+      placeholder="Repository Owner (e.g., microsoft)"
+      className="search-input"
+    />
+    <input
+      type="text"
+      value={githubRepo}
+      onChange={(e) => setGithubRepo(e.target.value)}
+      placeholder="Repository Name (e.g., vscode)"
+      className="search-input"
+    />
+  </div>
+  
+  <div className="search-bar">
+    <input
+      type="text"
+      value={githubQuery}
+      onChange={(e) => setGithubQuery(e.target.value)}
+      placeholder="Search commits (optional)"
+      className="search-input"
+    />
+    <button
+      onClick={handleGitHubCommits}
+      disabled={githubLoading || backendStatus !== 'connected'}
+      className="search-btn"
+    >
+      {githubLoading ? 'Loading...' : 'Get Commits'}
+    </button>
+    <button
+      onClick={handleGitHubPRs}
+      disabled={githubLoading || backendStatus !== 'connected'}
+      className="search-btn"
+    >
+      {githubLoading ? 'Loading...' : 'Get Pull Requests'}
+    </button>
+  </div>
+  
+  <div>
+    <p>💡 Example repositories:</p>
+    <div className="example-tags">
+      <span onClick={() => {setGithubOwner('microsoft'); setGithubRepo('vscode');}}>microsoft/vscode</span>
+      <span onClick={() => {setGithubOwner('facebook'); setGithubRepo('react');}}>facebook/react</span>
+    </div>
+  </div>
+  
+  {githubEvidence && (
+    <div className="results-section">
+      <h3>📊 GitHub Evidence Retrieved</h3>
+      <p><strong>Source:</strong> {githubEvidence.source}</p>
+      <p><strong>Repository:</strong> {githubEvidence.repository}</p>
+      <p><strong>Summary:</strong> {githubEvidence.summary}</p>
+      
+      {githubEvidence.evidence && githubEvidence.evidence.length > 0 && (
+        <div className="documents-grid">
+          {githubEvidence.evidence.map((item, index) => (
+            <div key={index} className="document-card">
+              {item.sha && (
+                <>
+                  <h5>📝 Commit: {item.sha.substring(0, 8)}</h5>
+                  <p><strong>Message:</strong> {item.message}</p>
+                  <p><strong>Author:</strong> {item.author}</p>
+                  <p><strong>Date:</strong> {new Date(item.date).toLocaleDateString()}</p>
+                  <a href={item.url} target="_blank" rel="noopener noreferrer">View on GitHub</a>
+                </>
+              )}
+              {item.number && (
+                <>
+                  <h5>🔀 PR #{item.number}</h5>
+                  <p><strong>Title:</strong> {item.title}</p>
+                  <p><strong>State:</strong> {item.state}</p>
+                  <p><strong>Author:</strong> {item.author}</p>
+                  <p><strong>Created:</strong> {new Date(item.created_at).toLocaleDateString()}</p>
+                  <a href={item.url} target="_blank" rel="noopener noreferrer">View on GitHub</a>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {githubEvidence.error && (
+        <div className="status error">
+          {githubEvidence.error}
+        </div>
+      )}
+    </div>
+  )}
+</div>

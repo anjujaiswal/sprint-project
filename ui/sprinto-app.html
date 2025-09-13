@@ -464,6 +464,13 @@
       const [chatInput, setChatInput] = useState('');
       const [isTyping, setIsTyping] = useState(false);
       const [suggestions, setSuggestions] = useState([]);
+      
+      // GitHub state
+      const [githubOwner, setGithubOwner] = useState('');
+      const [githubRepo, setGithubRepo] = useState('');
+      const [githubQuery, setGithubQuery] = useState('');
+      const [githubEvidence, setGithubEvidence] = useState(null);
+      const [githubLoading, setGithubLoading] = useState(false);
 
       const checkBackend = async () => {
         try {
@@ -650,6 +657,116 @@
           handleChatSend();
         }
       };
+      
+      // GitHub functions
+      const handleGitHubEvidence = async (type) => {
+        if (!githubOwner || !githubRepo) {
+          alert('Please enter repository owner and name');
+          return;
+        }
+        
+        if (backendStatus !== 'connected') {
+          alert('Backend not available. Please wait for Spring Boot to start.');
+          return;
+        }
+        
+        setGithubLoading(true);
+        try {
+          const response = await fetch('http://localhost:8080/api/github/evidence', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              owner: githubOwner,
+              repo: githubRepo,
+              query: githubQuery,
+              type: type
+            }),
+          });
+          
+          if (response.ok) {
+            const result = await response.json();
+            setGithubEvidence(result);
+          } else {
+            throw new Error('Failed to fetch GitHub evidence');
+          }
+        } catch (error) {
+          console.error('GitHub error:', error);
+          setGithubEvidence({ error: error.message });
+        } finally {
+          setGithubLoading(false);
+        }
+      };
+      
+      const handlePRAnalysis = async (analysisType) => {
+        if (!githubOwner || !githubRepo) {
+          alert('Please enter repository owner and name');
+          return;
+        }
+        
+        setGithubLoading(true);
+        try {
+          let url;
+          switch (analysisType) {
+            case 'without-approval':
+              url = `http://localhost:8080/api/github/prs-without-approval/${githubOwner}/${githubRepo}`;
+              break;
+            case 'reviewed-by':
+              if (!githubQuery) {
+                alert('Please enter reviewer name');
+                return;
+              }
+              url = `http://localhost:8080/api/github/prs-reviewed-by/${githubOwner}/${githubRepo}/${githubQuery}`;
+              break;
+            case 'waiting-review':
+              url = `http://localhost:8080/api/github/prs-waiting-review/${githubOwner}/${githubRepo}`;
+              break;
+            case 'recent-merged':
+              url = `http://localhost:8080/api/github/recent-merged-prs/${githubOwner}/${githubRepo}`;
+              break;
+            default:
+              return;
+          }
+          
+          const response = await fetch(url);
+          if (response.ok) {
+            const result = await response.json();
+            setGithubEvidence(result);
+          } else {
+            throw new Error('Failed to fetch PR analysis');
+          }
+        } catch (error) {
+          console.error('PR Analysis error:', error);
+          setGithubEvidence({ error: error.message });
+        } finally {
+          setGithubLoading(false);
+        }
+      };
+      
+      const downloadGitHubEvidence = async (type) => {
+        if (!githubOwner || !githubRepo) {
+          alert('Please enter repository owner and name');
+          return;
+        }
+        
+        try {
+          const response = await fetch(`http://localhost:8080/api/github/download/${githubOwner}/${githubRepo}?type=${type}`);
+          if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `github-${type}-evidence.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+          }
+        } catch (error) {
+          console.error('Download error:', error);
+        }
+      };
 
       useEffect(() => {
         // Check backend every 3 seconds
@@ -721,6 +838,12 @@
               onClick={() => setActiveTab('chat')}
             >
               🤖 AI Chat
+            </button>
+            <button 
+              className={`tab ${activeTab === 'github' ? 'active' : ''}`}
+              onClick={() => setActiveTab('github')}
+            >
+              🔗 GitHub Evidence
             </button>
           </nav>
 
@@ -835,13 +958,6 @@
             {activeTab === 'report' && (
               <div className="report-section">
                 <h2>📊 Compliance Report</h2>
-                <div className="compliance-score">
-                  <div className="score-circle">
-                    <span className="score-text">75%</span>
-                  </div>
-                  <h3>Compliance Score</h3>
-                  <p>Good compliance posture with {documents.length} documents uploaded</p>
-                </div>
                 
                 <div className="documents-grid">
                   <div className="document-card">
@@ -941,6 +1057,191 @@
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+            
+            {activeTab === 'github' && (
+              <div className="search-section">
+                <h2>🔗 GitHub Evidence Retrieval</h2>
+                <p style={{marginBottom: '1.5rem', color: '#666'}}>
+                  Pull compliance evidence from GitHub repositories - commits, pull requests, and issues
+                </p>
+                
+                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem'}}>
+                  <input
+                    type="text"
+                    value={githubOwner}
+                    onChange={(e) => setGithubOwner(e.target.value)}
+                    placeholder="Repository Owner (e.g., microsoft)"
+                    className="search-input"
+                  />
+                  <input
+                    type="text"
+                    value={githubRepo}
+                    onChange={(e) => setGithubRepo(e.target.value)}
+                    placeholder="Repository Name (e.g., vscode)"
+                    className="search-input"
+                  />
+                </div>
+                
+                <div className="search-bar">
+                  <input
+                    type="text"
+                    value={githubQuery}
+                    onChange={(e) => setGithubQuery(e.target.value)}
+                    placeholder="Search query (optional)"
+                    className="search-input"
+                  />
+                  <button
+                    onClick={() => handleGitHubEvidence('commits')}
+                    disabled={githubLoading || backendStatus !== 'connected'}
+                    className="search-btn"
+                  >
+                    {githubLoading ? 'Loading...' : 'Get Commits'}
+                  </button>
+                  <button
+                    onClick={() => handleGitHubEvidence('prs')}
+                    disabled={githubLoading || backendStatus !== 'connected'}
+                    className="search-btn"
+                  >
+                    {githubLoading ? 'Loading...' : 'Get PRs'}
+                  </button>
+                  <button
+                    onClick={() => handleGitHubEvidence('issues')}
+                    disabled={githubLoading || backendStatus !== 'connected'}
+                    className="search-btn"
+                  >
+                    {githubLoading ? 'Loading...' : 'Get Issues'}
+                  </button>
+                </div>
+                
+                <div style={{marginTop: '2rem', padding: '1.5rem', background: '#f8f9fa', borderRadius: '15px'}}>
+                  <h3>📊 PR Analysis Use Cases</h3>
+                  <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem'}}>
+                    <button
+                      onClick={() => handlePRAnalysis('without-approval')}
+                      disabled={githubLoading || backendStatus !== 'connected'}
+                      className="search-btn"
+                      style={{fontSize: '0.9rem'}}
+                    >
+                      PRs Without Approval
+                    </button>
+                    <button
+                      onClick={() => handlePRAnalysis('waiting-review')}
+                      disabled={githubLoading || backendStatus !== 'connected'}
+                      className="search-btn"
+                      style={{fontSize: '0.9rem'}}
+                    >
+                      PRs Waiting >24h
+                    </button>
+                    <button
+                      onClick={() => handlePRAnalysis('recent-merged')}
+                      disabled={githubLoading || backendStatus !== 'connected'}
+                      className="search-btn"
+                      style={{fontSize: '0.9rem'}}
+                    >
+                      Recent Merged PRs
+                    </button>
+                    <input
+                      type="text"
+                      placeholder="Reviewer name"
+                      value={githubQuery}
+                      onChange={(e) => setGithubQuery(e.target.value)}
+                      className="search-input"
+                      style={{fontSize: '0.9rem'}}
+                    />
+                    <button
+                      onClick={() => handlePRAnalysis('reviewed-by')}
+                      disabled={githubLoading || backendStatus !== 'connected' || !githubQuery}
+                      className="search-btn"
+                      style={{fontSize: '0.9rem'}}
+                    >
+                      PRs by Reviewer
+                    </button>
+                  </div>
+                </div>
+                
+                <div>
+                  <p>💡 Working examples:</p>
+                  <div className="example-tags">
+                    <span onClick={() => {setGithubOwner('octocat'); setGithubRepo('Hello-World');}}>octocat/Hello-World (commits only)</span>
+                    <span onClick={() => {setGithubOwner('atom'); setGithubRepo('atom');}}>atom/atom (all types)</span>
+                    <span onClick={() => {setGithubOwner('rails'); setGithubRepo('rails');}}>rails/rails (all types)</span>
+                  </div>
+                </div>
+                
+                {githubEvidence && (
+                  <div className="results-section">
+                    <h3>📊 GitHub Evidence Retrieved</h3>
+                    <p><strong>Source:</strong> {githubEvidence.source}</p>
+                    <p><strong>Repository:</strong> {githubEvidence.repository}</p>
+                    <p><strong>Summary:</strong> {githubEvidence.summary}</p>
+                    
+                    <div style={{marginBottom: '1rem'}}>
+                      <button
+                        onClick={() => downloadGitHubEvidence('commits')}
+                        className="search-btn"
+                        style={{marginRight: '0.5rem'}}
+                      >
+                        📥 Download CSV
+                      </button>
+                    </div>
+                    
+                    {githubEvidence.evidence && githubEvidence.evidence.length > 0 && (
+                      <div className="documents-grid">
+                        {githubEvidence.evidence.map((item, index) => (
+                          <div key={index} className="document-card">
+                            {item.sha && (
+                              <>
+                                <h5>📝 Commit: {item.sha}</h5>
+                                <p><strong>Message:</strong> {item.message}</p>
+                                <p><strong>Author:</strong> {item.author}</p>
+                                <p><strong>Date:</strong> {new Date(item.date).toLocaleDateString()}</p>
+                                <a href={item.url} target="_blank" rel="noopener noreferrer">View on GitHub</a>
+                              </>
+                            )}
+                            {item.number && (
+                              <>
+                                <h5>{item.title ? '🔀' : '🐛'} #{item.number}</h5>
+                                <p><strong>Title:</strong> {item.title}</p>
+                                <p><strong>State:</strong> {item.state}</p>
+                                <p><strong>Author:</strong> {item.author}</p>
+                                <p><strong>Created:</strong> {new Date(item.created_at).toLocaleDateString()}</p>
+                                <a href={item.url} target="_blank" rel="noopener noreferrer">View on GitHub</a>
+                              </>
+                            )}
+                            {item.pr_id && (
+                              <>
+                                <h5>🔀 PR #{item.pr_id}</h5>
+                                <p><strong>Title:</strong> {item.title}</p>
+                                {item.merged_by && <p><strong>Merged by:</strong> {item.merged_by}</p>}
+                                {item.reviewer && <p><strong>Reviewer:</strong> {item.reviewer}</p>}
+                                {item.decision && <p><strong>Decision:</strong> {item.decision}</p>}
+                                {item.waiting_time && <p><strong>Waiting:</strong> {item.waiting_time}</p>}
+                                {item.approvers && <p><strong>Approvers:</strong> {item.approvers.join(', ') || 'None'}</p>}
+                                {item.merged_at && <p><strong>Merged:</strong> {new Date(item.merged_at).toLocaleDateString()}</p>}
+                                {item.date && <p><strong>Review Date:</strong> {new Date(item.date).toLocaleDateString()}</p>}
+                              </>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {githubEvidence.error && (
+                      <div className="status error">
+                        {githubEvidence.error}
+                      </div>
+                    )}
+                    
+                    {githubEvidence.evidence && githubEvidence.evidence.length === 0 && (
+                      <div style={{padding: '1rem', background: '#f8f9fa', borderRadius: '10px', textAlign: 'center'}}>
+                        <p>📭 No {githubEvidence.source.toLowerCase()} found for this repository.</p>
+                        <p style={{fontSize: '0.9rem', color: '#666'}}>Try a different repository or evidence type.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </main>

@@ -1,0 +1,16 @@
+Asset ID,Asset Type,Location,Owner,Status
+LT001,Laptop,Office Floor 1,John Doe,Active
+LT002,Laptop,Office Floor 2,Jane Smith,Active
+LT003,Laptop,Remote,Bob Johnson,Active
+DT001,Desktop,Office Floor 1,Alice Brown,Active
+DT002,Desktop,Office Floor 2,Charlie Wilson,Maintenance
+SV001,Server,Data Center,IT Team,Active
+SV002,Server,Data Center,IT Team,Active
+PR001,Printer,Office Floor 1,Admin,Active
+PR002,Printer,Office Floor 2,Admin,Inactive
+TB001,Tablet,Office Floor 1,Marketing Team,Active
+TB002,Tablet,Remote,Sales Team,Active
+MN001,Monitor,Office Floor 1,John Doe,Active
+MN002,Monitor,Office Floor 2,Jane Smith,Active
+KB001,Keyboard,Office Floor 1,John Doe,Active
+MS001,Mouse,Office Floor 1,John Doe,Active
