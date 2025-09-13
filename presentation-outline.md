@@ -210,7 +210,7 @@ Frontend (HTML/JS) ←→ Spring Boot Backend ←→ OpenAI GPT-3.5
 **Quick Setup:**
 ```bash
 git clone https://github.com/anjujaiswal/sprinto-project
-cd sprinto/backend
+cd sprinto-project/backend
 mvn spring-boot:run
 ```
 
@@ -237,7 +237,7 @@ mvn spring-boot:run
 - How do we measure ROI?
 
 **Contact Information:**
-- Email: support@sprinto.com
+- Email: jaiswalanju2019@gmail.com
 - Documentation: github.com/anjujaiswal/sprinto-project
 - Demo: Available now!
 

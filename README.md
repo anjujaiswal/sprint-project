@@ -221,7 +221,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 📞 Support
 
 For support and questions:
-- Email: support@sprinto.com
+- Email: jaiswalanju2019@gmail.com
 - Documentation: Check the `/docs` folder
 - Issues: Submit GitHub issues for bug reports
 
