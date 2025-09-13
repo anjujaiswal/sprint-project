@@ -1,0 +1,50 @@
+ACCESS CONTROL GUIDELINES
+
+OBJECTIVE: Maintain secure access to company systems and data
+
+1. USER ACCOUNT MANAGEMENT
+- New employee accounts created within 24 hours of start date
+- Account deactivation within 2 hours of termination
+- Regular access reviews conducted quarterly
+- Password reset procedures require manager approval
+- Inactive accounts disabled after 90 days
+
+2. PRIVILEGED ACCESS
+- Administrative access requires approval from two managers
+- Privileged accounts monitored 24/7
+- Session recording for all administrative activities
+- Just-in-time access for temporary elevated privileges
+- Regular privileged access recertification
+
+3. AUTHENTICATION REQUIREMENTS
+- Strong passwords enforced through group policy
+- MFA required for VPN, email, and cloud services
+- Biometric authentication for server room access
+- Single Sign-On (SSO) implementation across applications
+- Certificate-based authentication for service accounts
+
+4. AUTHORIZATION MATRIX
+- Role-based access control (RBAC) implemented
+- Principle of least privilege enforced
+- Segregation of duties for financial systems
+- Approval workflows for sensitive data access
+- Regular access rights auditing
+
+5. REMOTE ACCESS
+- VPN required for all remote connections
+- Device compliance verification before access
+- Geolocation restrictions for high-risk regions
+- Time-based access controls for contractors
+- Secure remote desktop solutions only
+
+6. MONITORING AND LOGGING
+- All access attempts logged and monitored
+- Failed login alerts after 3 attempts
+- Privileged account activity real-time monitoring
+- Monthly access reports to department heads
+- SIEM integration for security event correlation
+
+Version: 2.1
+Approved by: CISO
+Date: February 20, 2024
+Next Review: August 20, 2024

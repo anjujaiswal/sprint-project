@@ -1,0 +1,46 @@
+DATA PROTECTION PROCEDURE
+
+PURPOSE: Ensure compliance with GDPR and protect personal data
+
+SCOPE: All processing of personal data within the organization
+
+PROCEDURE STEPS:
+1. Data Collection
+   - Obtain explicit consent before collecting personal data
+   - Document legal basis for processing
+   - Implement privacy by design principles
+   - Conduct Data Protection Impact Assessments (DPIA) for high-risk processing
+
+2. Data Storage
+   - Encrypt all personal data using AES-256 encryption
+   - Store data in EU-based servers only
+   - Implement access controls and audit logs
+   - Regular backup and recovery testing
+
+3. Data Breach Response
+   - Detect and contain breach within 24 hours
+   - Notify supervisory authority within 72 hours
+   - Inform affected individuals if high risk
+   - Document all incidents in breach register
+
+4. Data Subject Rights
+   - Respond to access requests within 30 days
+   - Provide data portability upon request
+   - Honor deletion requests (right to be forgotten)
+   - Process rectification requests promptly
+
+5. Data Retention
+   - Implement retention schedules based on legal requirements
+   - Automatic deletion after retention period expires
+   - Regular review of stored personal data
+   - Secure disposal of obsolete data
+
+6. Third Party Processing
+   - Data Processing Agreements (DPA) with all processors
+   - Regular audits of third-party compliance
+   - Adequate safeguards for international transfers
+   - Standard Contractual Clauses (SCCs) where applicable
+
+Last Updated: March 15, 2024
+Next Review: March 15, 2025
+Owner: Data Protection Officer

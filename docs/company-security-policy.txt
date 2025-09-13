@@ -1,0 +1,23 @@
+COMPANY SECURITY POLICY
+
+1. ACCESS CONTROL
+All employees must use strong passwords with minimum 12 characters including uppercase, lowercase, numbers, and special characters. Multi-factor authentication is required for all systems.
+
+2. DATA PROTECTION
+Personal data must be encrypted at rest and in transit. Data classification levels: Public, Internal, Confidential, Restricted. Only authorized personnel can access confidential data.
+
+3. INCIDENT RESPONSE
+Security incidents must be reported within 1 hour. The incident response team includes: Security Manager, IT Director, and Legal Counsel. All incidents are logged and tracked.
+
+4. NETWORK SECURITY
+Firewalls must be configured to deny all traffic by default. VPN access required for remote connections. Regular vulnerability scans are conducted monthly.
+
+5. EMPLOYEE TRAINING
+All employees must complete annual security awareness training. Phishing simulation tests are conducted quarterly. Security policies are reviewed and acknowledged annually.
+
+6. PHYSICAL SECURITY
+Server rooms require badge access and biometric authentication. Visitor access must be escorted at all times. Security cameras monitor all sensitive areas 24/7.
+
+Effective Date: January 1, 2024
+Review Date: December 31, 2024
+Approved by: Chief Information Security Officer
