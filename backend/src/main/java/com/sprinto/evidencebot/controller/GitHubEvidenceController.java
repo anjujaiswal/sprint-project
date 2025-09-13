@@ -64,9 +64,40 @@ public class GitHubEvidenceController {
                 .body(csvData);
     }
 
-    @GetMapping("/repositories/{owner}")
-    public ResponseEntity<Map<String, Object>> getRepositories(@PathVariable String owner) {
-        Map<String, Object> repos = gitHubEvidenceService.getRepositories(owner);
-        return ResponseEntity.ok(repos);
+    // Use Case 1: PRs merged without approval
+    @GetMapping("/prs-without-approval/{owner}/{repo}")
+    public ResponseEntity<Map<String, Object>> getPRsWithoutApproval(
+            @PathVariable String owner,
+            @PathVariable String repo) {
+        Map<String, Object> result = gitHubEvidenceService.getPRsWithoutApproval(owner, repo);
+        return ResponseEntity.ok(result);
+    }
+
+    // Use Case 2: PRs reviewed by specific user
+    @GetMapping("/prs-reviewed-by/{owner}/{repo}/{reviewer}")
+    public ResponseEntity<Map<String, Object>> getPRsReviewedBy(
+            @PathVariable String owner,
+            @PathVariable String repo,
+            @PathVariable String reviewer) {
+        Map<String, Object> result = gitHubEvidenceService.getPRsReviewedBy(owner, repo, reviewer);
+        return ResponseEntity.ok(result);
+    }
+
+    // Use Case 3: PRs waiting for review > 24 hours
+    @GetMapping("/prs-waiting-review/{owner}/{repo}")
+    public ResponseEntity<Map<String, Object>> getPRsWaitingForReview(
+            @PathVariable String owner,
+            @PathVariable String repo) {
+        Map<String, Object> result = gitHubEvidenceService.getPRsWaitingForReview(owner, repo);
+        return ResponseEntity.ok(result);
+    }
+
+    // Use Case 4: PRs merged in last 7 days with approvers
+    @GetMapping("/recent-merged-prs/{owner}/{repo}")
+    public ResponseEntity<Map<String, Object>> getRecentlyMergedPRs(
+            @PathVariable String owner,
+            @PathVariable String repo) {
+        Map<String, Object> result = gitHubEvidenceService.getRecentlyMergedPRs(owner, repo);
+        return ResponseEntity.ok(result);
     }
 }
