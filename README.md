@@ -63,11 +63,17 @@ git clone https://github.com/anjujaiswal/sprinto-project
 cd sprinto
 ```
 
-### Step 2: Configure OpenAI API Key
+### Step 2: Configure API Keys
 Edit `backend/src/main/resources/application.properties`:
 ```properties
 openai.api.key=your_openai_api_key_here
+github.api.token=your_github_token_here
 ```
+
+**GitHub Token Setup:**
+1. Go to GitHub Settings → Developer settings → Personal access tokens
+2. Generate a new token with `repo` scope for private repos or `public_repo` for public repos
+3. Copy the token to your configuration
 
 ### Step 3: Start the Backend
 ```bash
@@ -91,7 +97,8 @@ open ui/sprinto-app.html
 1. **Upload Documents**: Use the "Upload Documents" tab to add your compliance documents
 2. **Search Evidence**: Use the "Search Evidence" tab to find specific compliance information
 3. **AI Chat**: Interact with the AI assistant for detailed analysis
-4. **View Reports**: Check the "Compliance Report" tab for overview metrics
+4. **GitHub Evidence**: Pull evidence from GitHub repositories (commits, PRs, issues)
+5. **View Reports**: Check the "Compliance Report" tab for overview metrics
 
 ---
 
@@ -119,6 +126,12 @@ open ui/sprinto-app.html
 - **Real-time Metrics**: Live compliance score and document counts
 - **Policy Analysis**: Automatic categorization of policy vs procedure documents
 - **Audit Readiness**: Generates comprehensive compliance reports
+
+### 5. GitHub Integration
+- **Change Management Evidence**: Pull commits, pull requests, and issues
+- **Query-based Search**: Filter results by keywords or dates
+- **CSV Export**: Download evidence in spreadsheet format
+- **Audit Trail**: Track code changes and reviews for compliance
 
 ---
 
@@ -151,6 +164,10 @@ sprinto/
 - `GET /api/documents` - List all documents
 - `POST /api/documents/upload` - Upload new document
 - `GET /api/documents/{id}` - Get specific document
+
+### GitHub Evidence
+- `POST /api/github/evidence` - Get GitHub evidence (commits, PRs, issues)
+- `GET /api/github/download/{owner}/{repo}` - Download evidence as CSV
 
 ### Evidence Generation
 - `POST /api/evidence/generate` - Generate evidence for query
